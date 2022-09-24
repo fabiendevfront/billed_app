@@ -19,14 +19,12 @@ const row = (bill) => {
     `)
   }
 
-// Sort bills by dates in descending order
 const rows = (data) => {
-  const billsSorted = data.sort((a,b) => new Date(b.date) - new Date(a.date));
-  return (billsSorted && billsSorted.length) ? billsSorted.map(bill => row(bill)).join("") : ""
+  return (data && data.length) ? data.map(bill => row(bill)).join("") : ""
 }
 
 export default ({ data: bills, loading, error }) => {
-  
+
   const modal = () => (`
     <div class="modal fade" id="modaleFile" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
@@ -49,7 +47,7 @@ export default ({ data: bills, loading, error }) => {
   } else if (error) {
     return ErrorPage(error)
   }
-  
+
   return (`
     <div class='layout'>
       ${VerticalLayout(120)}
