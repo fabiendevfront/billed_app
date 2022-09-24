@@ -3,13 +3,13 @@
 }
 
 .col-half {
-  margin:auto;
+  margin: auto;
   width: 75%;
   margin-top: 16px;
 }
 
 .col-half-row {
-  display:flex;
+  display: flex;
   width: 75%;
   margin-left: 20px;
   margin-top: 16px;
@@ -20,6 +20,17 @@
   border: 2px solid #0D5AE5 !important;
   box-sizing: border-box;
   border-radius: 5px;
+}
+
+.red-border {
+  opacity: 0.5;
+  border: 2px solid #e50d0d !important;
+  box-sizing: border-box;
+  border-radius: 5px;
+}
+
+.hidden {
+  display: none;
 }
 
 label {
@@ -48,12 +59,16 @@ label {
   margin-top: 50px;
 }
 
-textarea, input, select {
+textarea,
+input,
+select {
   color: #0E5AE5 !important;
   opacity: 0.7 !important;
 }
 
-textarea:focus, input:focus, select:focus {
+textarea:focus,
+input:focus,
+select:focus {
   color: #0E5AE5 !important;
   opacity: 1 !important;
 }
