@@ -19,8 +19,10 @@ const row = (bill) => {
     `)
   }
 
+// Sort bills by dates in descending order
 const rows = (data) => {
-  return (data && data.length) ? data.map(bill => row(bill)).join("") : ""
+  const billsSorted = data.sort((a,b) => new Date(b.date) - new Date(a.date));
+  return (billsSorted && billsSorted.length) ? billsSorted.map(bill => row(bill)).join("") : ""
 }
 
 export default ({ data: bills, loading, error }) => {
