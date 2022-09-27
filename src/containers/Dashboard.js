@@ -145,8 +145,12 @@ export default class {
       this.counter ++
     }
 
+     // Condition for add event listener with jquery data-listener
     bills.forEach(bill => {
-      $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
+      if (!$(`#open-bill${bill.id}`).data('listener')) {
+        $(`#open-bill${bill.id}`).data('listener', true)
+        $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
+      }
     })
 
     return bills
