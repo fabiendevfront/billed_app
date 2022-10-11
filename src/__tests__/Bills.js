@@ -22,7 +22,7 @@ describe("Given i am connected as an employee", () => {
     it('Then loading page should be rendered', () => {
       const html = BillsUI({ loading: true })
       document.body.innerHTML = html
-      expect(screen.getAllByText('Loading...')).toBeTruthy()
+      expect(screen.getByText("Loading...")).toBeTruthy()
     })
 
     // Vérifie l'affichage de la page d'erreur
@@ -34,17 +34,17 @@ describe("Given i am connected as an employee", () => {
 
     // Vérifie que l'icone "factures" soit en surbrillance
     it("Then bill icon in vertical layout should be highlighted", async () => {
-      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-      window.localStorage.setItem('user', JSON.stringify({
+      Object.defineProperty(window, "localStorage", { value: localStorageMock })
+      window.localStorage.setItem("user", JSON.stringify({
         type: 'Employee'
       }))
       document.body.innerHTML = `<div id="root"></div>`;
       router()
       window.onNavigate(ROUTES_PATH.Bills)
-      await waitFor(() => screen.getByTestId('icon-window'))
-      const windowIcon = screen.getByTestId('icon-window')
+      await waitFor(() => screen.getByTestId("icon-window"))
+      const windowIcon = screen.getByTestId("icon-window")
       // Utilisation du matcher Jest-dom "toHaveClass" pour verifier si l'élément à la class "active-icon"
-      expect(windowIcon).toHaveClass('active-icon')
+      expect(windowIcon).toHaveClass("active-icon")
     })
 
     // Vérifie que les factures soit correctement classée de la plus récente à la plus ancienne
@@ -66,7 +66,7 @@ describe("Given i am connected as an employee", () => {
         const onNavigate = (pathname) => {
           document.body.innerHTML = ROUTES({ pathname })
         };
-        const billsItems = new Bills({
+        const billsInit = new Bills({
           document,
           onNavigate,
           store: mockStore,
@@ -80,7 +80,7 @@ describe("Given i am connected as an employee", () => {
         // Récupère le premier bouton trouvé
         const eyeIcon = screen.getAllByTestId("icon-eye")[0];
         // Récupère la fonction qui ouvre la modale
-        const handleClickIconEye = jest.fn(billsItems.handleClickIconEye(eyeIcon))
+        const handleClickIconEye = jest.fn(billsInit.handleClickIconEye(eyeIcon))
         // Ajoute l'event et simule l'action utilisateur
         eyeIcon.addEventListener("click", handleClickIconEye)
         fireEvent.click(eyeIcon)
@@ -100,14 +100,14 @@ describe("Given i am connected as an employee", () => {
         const onNavigate = (pathname) => {
           document.body.innerHTML = ROUTES({ pathname })
         };
-        const billsItems = new Bills({
+        const billsInit = new Bills({
           document,
           onNavigate,
           store: mockStore,
           localStorage: window.localStorage
         })
         // Récupère la fonction pour le test
-        const handleClickNewBill = jest.fn(billsItems.handleClickNewBill);
+        const handleClickNewBill = jest.fn(billsInit.handleClickNewBill);
         // Récupère le bouton qui ouvre le form
         const btnNewBill = screen.getByTestId("btn-new-bill");
         // Ajoute l'event et simule l'action utilisateur
@@ -160,7 +160,7 @@ describe("Given I am connected as an employee", () => {
     })
 
     // Simule le rejet de la promesse, on vérifie l'affichage du message d'erreur
-    it("fetches bills from an API and fails with 404 message error", async () => {
+    it("Then fetches bills from an API and fails with 404 message error", async () => {
 
       // mockImplementationOnce : retourne le résultat d'une fonction mokée.
       mockStore.bills.mockImplementationOnce(() => {
@@ -177,7 +177,7 @@ describe("Given I am connected as an employee", () => {
     })
 
     // Simule le rejet de la promesse, on vérifie l'affichage du message d'erreur
-    it("fetches messages from an API and fails with 500 message error", async () => {
+    it("Then fetches messages from an API and fails with 500 message error", async () => {
       mockStore.bills.mockImplementationOnce(() => {
         return {
           list: () => {
