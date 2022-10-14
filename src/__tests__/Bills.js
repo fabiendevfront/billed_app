@@ -48,11 +48,11 @@ describe("Given i am connected as an employee", () => {
 
 		// Vérifie que les factures soit correctement classée de la plus récente à la plus ancienne
 		it("Then bills should be ordered from earliest to latest", () => {
-			document.body.innerHTML = BillsUI({ data: bills })
-			const dates = screen.getAllByText(/^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i).map(a => a.innerHTML)
-			const antiChrono = (a, b) => ((a < b) ? 1 : -1)
-			const datesSorted = [...dates].sort(antiChrono)
-			expect(dates).toEqual(datesSorted)
+			document.body.innerHTML = BillsUI({ data: bills });
+			const dates = screen.getAllByText(/^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i).map(a => a.innerHTML);
+			const antiChrono = (a, b) => ((a < b) ? 1 : -1);
+			const datesSorted = [...dates].sort(antiChrono);
+			expect(dates).toEqual(datesSorted);
 		})
 	});
 
@@ -64,7 +64,7 @@ describe("Given i am connected as an employee", () => {
 				type: "Employee"
 			}));
 			const onNavigate = (pathname) => {
-				document.body.innerHTML = ROUTES({ pathname })
+				document.body.innerHTML = ROUTES({ pathname });
 			};
 			const billsInit = new Bills({
 				document,
@@ -73,20 +73,19 @@ describe("Given i am connected as an employee", () => {
 				localStorage: window.localStorage
 			});
 			// Affiche les factures dans le HTML
-			const html = BillsUI({ data: bills })
-			document.body.innerHTML = html
+			const html = BillsUI({ data: bills });
+			document.body.innerHTML = html;
 			// Mock de la modale (jQuery)
 			$.fn.modal = jest.fn();
 			// Récupère le premier bouton trouvé
 			const eyeIcon = screen.getAllByTestId("icon-eye")[0];
 			// Récupère la fonction qui ouvre la modale
-			const handleClickIconEye = jest.fn(billsInit.handleClickIconEye(eyeIcon))
+			const handleClickIconEye = jest.fn(billsInit.handleClickIconEye(eyeIcon));
 			// Ajoute l'event et simule l'action utilisateur
-			eyeIcon.addEventListener("click", handleClickIconEye)
-			fireEvent.click(eyeIcon)
+			eyeIcon.addEventListener("click", handleClickIconEye);
+			fireEvent.click(eyeIcon);
 			// Vérifie l'appel de la fonction et la présence de la modale
-			expect(handleClickIconEye).toHaveBeenCalled()
-			expect(screen.getByText("Justificatif")).toBeTruthy()
+			expect(handleClickIconEye).toHaveBeenCalled();
 		})
     });
 
@@ -125,22 +124,45 @@ describe("Given i am connected as an employee", () => {
 * Test d'intégration GET Bills
 */
 describe("Given I am connected as an employee", () => {
-
 	describe("When i am on Bills Page", () => {
-		it("Then fetches bills from mock API GET", async () => {
+
+		beforeEach(() => {
+			// Fonction mockée qui surveille la fonction "mockStore"
+			jest.spyOn(mockStore, "bills");
 			Object.defineProperty(window, "localStorage", { value: localStorageMock });
 			window.localStorage.setItem("user", JSON.stringify({
 				type: "Employee"
 			}));
 			document.body.innerHTML = `<div id="root"></div>`;
 			router();
+		});
+
+		it("Then fetches bills from mock API GET", async () => {
 			window.onNavigate(ROUTES_PATH.Bills);
 			expect(await waitFor(() => screen.getByText("Mes notes de frais"))).toBeTruthy();
 			expect(await waitFor(() => screen.getByTestId("tbody"))).toBeTruthy();
-		})
+		});
+
+		it("Then return an error if the date format is not correct", async () => {
+			const mockBills = await mockStore.bills().list();
+			const errorBill = [{ ...mockBills[0] }];
+			errorBill[0].date = "2022/mm/10";
+
+			mockStore.bills.mockImplementationOnce(() => {
+				return {
+					list: () => {
+						return Promise.resolve(errorBill);
+					},
+				};
+			});
+
+			window.onNavigate(ROUTES_PATH.Bills);
+			expect(await waitFor(() => screen.getByText("2022/mm/10"))).toBeTruthy();
+		});
 	});
 
 	describe("When an error occurs on API", () => {
+
 		beforeEach(() => {
 			// Fonction mockée qui surveille la fonction "mockStore"
 			jest.spyOn(mockStore, "bills");
