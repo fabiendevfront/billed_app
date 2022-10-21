@@ -12,6 +12,7 @@ import { localStorageMock } from "../__mocks__/localStorage.js";
 import mockStore from "../__mocks__/store";
 import router from "../app/Router.js";
 
+// Mock du store
 jest.mock("../app/store", () => mockStore);
 
 describe("Given i am connected as an employee", () => {
@@ -56,8 +57,9 @@ describe("Given i am connected as an employee", () => {
 		})
 	});
 
-    // Vérifie l'ouverture de la modale si click sur le bouton "oeil" d'une facture
     describe("When i click on an eye icon", () => {
+
+		// Vérifie l'ouverture de la modale si click sur le bouton "oeil" d'une facture
 		it("Then the modal should open", () => {
 			Object.defineProperty(window, "localStorage", { value: localStorageMock });
 			window.localStorage.setItem("user", JSON.stringify({
@@ -77,20 +79,23 @@ describe("Given i am connected as an employee", () => {
 			document.body.innerHTML = html;
 			// Mock de la modale (jQuery)
 			$.fn.modal = jest.fn();
-			// Récupère le premier bouton trouvé
+			// Sélectionne le premier bouton trouvé
 			const eyeIcon = screen.getAllByTestId("icon-eye")[0];
-			// Récupère la fonction qui ouvre la modale
+			// Mock de la fonction qui ouvre la modale
 			const handleClickIconEye = jest.fn(billsInit.handleClickIconEye(eyeIcon));
-			// Ajoute l'event et simule l'action utilisateur
+			// Ajoute l'event
 			eyeIcon.addEventListener("click", handleClickIconEye);
+			// Simule le click de l'utilisateur
 			fireEvent.click(eyeIcon);
-			// Vérifie l'appel de la fonction et la présence de la modale
+			// Vérifie l'appel de la fonction
 			expect(handleClickIconEye).toHaveBeenCalled();
 		})
     });
 
-    // Vérifie que le formulaire de création d'une nouvelle facture s'affiche
+
     describe("When i click on the button new bill", () => {
+
+		// Vérifie que le formulaire de création d'une nouvelle facture s'affiche
 		it("Then the new bill form should open", () => {
 			Object.defineProperty(window, "localStorage", { value: localStorageMock });
 			window.localStorage.setItem('user', JSON.stringify({
@@ -104,15 +109,16 @@ describe("Given i am connected as an employee", () => {
 				onNavigate,
 				store: mockStore,
 				localStorage: window.localStorage
-			})
-			// Récupère la fonction pour le test
-			const handleClickNewBill = jest.fn(billsInit.handleClickNewBill);
-			// Récupère le bouton qui ouvre le form
+			});
+			// Sélectionne le bouton qui ouvre le form
 			const btnNewBill = screen.getByTestId("btn-new-bill");
-			// Ajoute l'event et simule l'action utilisateur
+			// Mock de la fonction qui affiche le formulaire
+			const handleClickNewBill = jest.fn(billsInit.handleClickNewBill);
+			// Ajoute l'event
 			btnNewBill.addEventListener("click", handleClickNewBill);
+			// Simule le click de l'utilisateur
 			fireEvent.click(btnNewBill);
-			// Vérifie que la fonction est appelée et que le formulaire s'affiche
+			// Vérifie l'appel de la fonction et que le formulaire s'affiche
 			expect(handleClickNewBill).toHaveBeenCalled();
 			expect(screen.getByText("Envoyer une note de frais")).toBeTruthy();
 		});
@@ -126,8 +132,8 @@ describe("Given i am connected as an employee", () => {
 describe("Given I am connected as an employee", () => {
 	describe("When i am on Bills Page", () => {
 
-		beforeEach(() => {
-			// Fonction mockée qui surveille la fonction "mockStore"
+		// Vérifie la récupération des factures depuis L'API mocké
+		it("Then fetches bills from mock API GET", async () => {
 			jest.spyOn(mockStore, "bills");
 			Object.defineProperty(window, "localStorage", { value: localStorageMock });
 			window.localStorage.setItem("user", JSON.stringify({
@@ -135,19 +141,34 @@ describe("Given I am connected as an employee", () => {
 			}));
 			document.body.innerHTML = `<div id="root"></div>`;
 			router();
-		});
 
-		it("Then fetches bills from mock API GET", async () => {
 			window.onNavigate(ROUTES_PATH.Bills);
 			expect(await waitFor(() => screen.getByText("Mes notes de frais"))).toBeTruthy();
 			expect(await waitFor(() => screen.getByTestId("tbody"))).toBeTruthy();
 		});
+	});
 
+	describe("When an error occurs on API", () => {
+
+		// Préparation répétée: utilisation du hook "beforeEach"
+		beforeEach(() => {
+			// Fonction mockée qui surveille les appels à "mockStore"
+			jest.spyOn(mockStore, "bills");
+			Object.defineProperty(window, "localStorage", { value: localStorageMock });
+			window.localStorage.setItem("user", JSON.stringify({
+				type: "Employee",
+				email: "a@a"
+			}));
+			document.body.innerHTML = `<div id="root"></div>`;
+			router();
+		});
+
+		// Simule le rejet de la promesse, vérifie l'affichage d'un message d'erreur si le format de date est incorrect
 		it("Then return an error if the date format is not correct", async () => {
 			const mockBills = await mockStore.bills().list();
 			const errorBill = [{ ...mockBills[0] }];
 			errorBill[0].date = "2022/mm/10";
-
+			// mockImplementationOnce : retourne le résultat d'une fonction mokée.
 			mockStore.bills.mockImplementationOnce(() => {
 				return {
 					list: () => {
@@ -159,25 +180,9 @@ describe("Given I am connected as an employee", () => {
 			window.onNavigate(ROUTES_PATH.Bills);
 			expect(await waitFor(() => screen.getByText("2022/mm/10"))).toBeTruthy();
 		});
-	});
 
-	describe("When an error occurs on API", () => {
-
-		beforeEach(() => {
-			// Fonction mockée qui surveille la fonction "mockStore"
-			jest.spyOn(mockStore, "bills");
-			Object.defineProperty(window, "localStorage", { value: localStorageMock });
-			window.localStorage.setItem("user", JSON.stringify({
-				type: "Employee",
-				email: "a@a"
-			}));
-			document.body.innerHTML = `<div id="root"></div>`;
-			router();
-		});
-
-		// Simule le rejet de la promesse, on vérifie l'affichage du message d'erreur
+		// Simule le rejet de la promesse, vérifie l'affichage du message d'erreur 404
 		it("Then fetches bills from an API and fails with 404 message error", async () => {
-			// mockImplementationOnce : retourne le résultat d'une fonction mokée.
 			mockStore.bills.mockImplementationOnce(() => {
 				return {
 					list: () => {
@@ -191,7 +196,7 @@ describe("Given I am connected as an employee", () => {
 			expect(message).toBeTruthy();
 		});
 
-		// Simule le rejet de la promesse, on vérifie l'affichage du message d'erreur
+		// Simule le rejet de la promesse, vérifie l'affichage du message d'erreur 500
 		it("Then fetches messages from an API and fails with 500 message error", async () => {
 			mockStore.bills.mockImplementationOnce(() => {
 				return {
